@@ -3,35 +3,38 @@ import './App.css';
 import Container from 'react-bootstrap/Container';
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Todo from './Todo';
 
 function App() {
-  const [todo, setTodo] = useState([
-    {id:1, title:'Learn web', checked:true},
-    {id:2, title:'Get a job', checked:false}
-  ]);
-  const checkUpdate = (id, value)=>{
-    let newtodos = todo.map(item=>{
-      return item.id === id ?  {...item, checked:value} : item
+  const [todo, setTodo] = useState(() => {
+    const todoStringFromStorage = window.localStorage.getItem('todo');
+    return todoStringFromStorage ? JSON.parse(todoStringFromStorage) : [
+      { id: 1, title: 'Learn web', checked: true },
+      { id: 2, title: 'Get a job', checked: false }
+    ];
+  });
+  const checkUpdate = (id, value) => {
+    let newtodos = todo.map(item => {
+      return item.id === id ? { ...item, checked: value } : item
     });
     setTodo(newtodos);
   }
-  const updateTodo = (id, value)=>{
-    console.log(id,value);
-    let newtodos = todo.map(item=>{
-      return item.id === id ?  {...item, title:value} : item
+  const updateTodo = (id, value) => {
+    console.log(id, value);
+    let newtodos = todo.map(item => {
+      return item.id === id ? { ...item, title: value } : item
     });
     setTodo(newtodos);
   }
-  const deleteTodo = (id)=>{
-    setTodo(prev=>prev.filter(item=>item.id !== id));
+  const deleteTodo = (id) => {
+    setTodo(prev => prev.filter(item => item.id !== id));
   }
 
-  const todos = todo.map(item=>
-    <Todo 
-      key={item.id} 
-      data={item} 
+  const todos = todo.map(item =>
+    <Todo
+      key={item.id}
+      data={item}
       checkUpdate={checkUpdate}
       deleteTodo={deleteTodo}
       updateTodo={updateTodo}
@@ -43,13 +46,21 @@ function App() {
       ...prev,
       { id: prev[prev.length - 1].id + 1 || 1, title: value, checked: false }
     ]);
-  };  
+  };
+
+
+  // useEffect(할일,[]); // 최초 한 번만 작동합니다.
+  // useEffect(할일,[todo]); // 최초 실행 + todo가 변경되면 작동합니다
+  useEffect(() => {
+    const todoString = JSON.stringify(todo);
+    window.localStorage.setItem('todo', todoString);
+  }, [todo])
 
 
   return (
     <Container>
       <h1>To Do List</h1>
-      <Form onSubmit={(e)=>{
+      <Form onSubmit={(e) => {
         e.preventDefault();
         const value = e.target.todo.value.trim();
         if (value) {
@@ -64,7 +75,7 @@ function App() {
         </Form.Group>
         <Button type="submit" variant="primary">입력</Button>
       </Form>
-      <hr/>
+      <hr />
       {todos}
 
     </Container>
